@@ -302,12 +302,20 @@ body {
   border-color: transparent;
 }
 
-/* Индикатор обновления потягиванием */
+/* Индикатор обновления потягиванием: круговая стрелка */
 .pull {
   margin: 0; display: flex; align-items: center; justify-content: center;
-  color: var(--muted); font-size: 12px; overflow: hidden;
+  color: rgba(255, 255, 255, 0.5); overflow: hidden;
 }
 .pull[hidden] { display: none; }
+.pull svg {
+  width: 18px; height: 18px;
+  transition: color .2s;
+}
+.pull[data-ready="true"] { color: var(--text); }
+.pull[data-spinning="true"] svg { animation: spin .8s linear infinite; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* ============================================================
    Движение. Сдержанное: короткие длительности, мягкие кривые.

@@ -174,6 +174,7 @@ const CARD_ICONS = {
   telegram: '<path d="M21 3 2 10.5l6 2.5L21 3zM8 13v6l3.5-3.5L21 3"/>',
   trash: '<path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6"/>',
   check: '<path d="m5 13 4 4L19 7"/>',
+  refresh: '<path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/>',
 };
 
 function svgIcon(name, className) {
@@ -451,11 +452,17 @@ export function renderList(all, state, handlers) {
 }
 
 // Обновление потягиванием вниз. Кнопки «Обновить» нет: жест заменил её.
+// Вместо подписи — круговая стрелка: доворачивается вслед за пальцем,
+// раскручивается, пока идёт обновление.
 export function enablePullToRefresh(onRefresh) {
   const indicator = el('pull');
   const THRESHOLD = 70;      // сколько нужно протянуть, чтобы обновить
   const MAX_PULL = 110;      // дальше индикатор не растёт
   const SLOP = 8;            // на этом расстоянии решаем, куда ведут палец
+
+  const arrow = svgIcon('refresh');
+  indicator.replaceChildren(arrow);
+  indicator.setAttribute('role', 'status');
 
   let startY = null;
   let startX = 0;
@@ -471,11 +478,15 @@ export function enablePullToRefresh(onRefresh) {
     axis = null;
     indicator.hidden = true;
     indicator.style.height = '';
+    indicator.dataset.ready = 'false';
+    indicator.dataset.spinning = 'false';
+    arrow.style.transform = '';
+    arrow.style.opacity = '';
   }
 
   document.addEventListener('touchstart', (event) => {
     // Лента статусов прокручивается вбок — там жест обновления не нужен.
-    if (event.target.closest('#filters')) {
+    if (event.target.closest?.('#filters')) {
       startY = null;
       return;
     }
@@ -512,10 +523,16 @@ export function enablePullToRefresh(onRefresh) {
     }
     // Гасим родной отскок страницы, иначе жест конфликтует с прокруткой.
     event.preventDefault();
+
+    const progress = Math.min(distance / THRESHOLD, 1);
+    const ready = distance >= THRESHOLD;
+
     indicator.hidden = false;
-    indicator.textContent =
-      distance >= THRESHOLD ? 'Отпустите для обновления' : 'Потяните вниз';
     indicator.style.height = `${Math.min(distance, MAX_PULL)}px`;
+    indicator.dataset.ready = String(ready);
+    indicator.setAttribute('aria-label', ready ? 'Отпустите для обновления' : 'Потяните вниз');
+    arrow.style.opacity = String(0.35 + progress * 0.65);
+    arrow.style.transform = `rotate(${Math.round(distance * 2.6)}deg)`;
   }, { passive: false });
 
   document.addEventListener('touchend', async () => {
@@ -526,8 +543,12 @@ export function enablePullToRefresh(onRefresh) {
     }
     refreshing = true;
     startY = null;
-    indicator.textContent = 'Обновление…';
     indicator.style.height = `${THRESHOLD}px`;
+    indicator.setAttribute('aria-label', 'Обновление');
+    // Снимаем ручной поворот, иначе он спорит с анимацией вращения.
+    arrow.style.transform = '';
+    arrow.style.opacity = '1';
+    indicator.dataset.spinning = 'true';
     try {
       await onRefresh();
     } finally {
