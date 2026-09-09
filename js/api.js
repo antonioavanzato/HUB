@@ -1,0 +1,51 @@
+// Сеть. Роуты и заголовок повторяют BookingRequestsSyncService.swift:
+// маршрут передаётся query-параметром ?r=, ключ — заголовком X-Api-Key.
+const BASE_URL = 'https://functions.yandexcloud.net/d4e2uuvutkn0qcqevb9j';
+
+export class UnauthorizedError extends Error {
+  constructor() {
+    super('Ключ недействителен');
+    this.name = 'UnauthorizedError';
+  }
+}
+
+async function request(key, route, { method = 'GET', body } = {}) {
+  const url = `${BASE_URL}?r=${encodeURIComponent(route)}`;
+  const options = {
+    method,
+    headers: { 'X-Api-Key': key },
+  };
+  if (body) {
+    options.headers['Content-Type'] = 'application/json';
+    options.body = JSON.stringify(body);
+  }
+
+  let response;
+  try {
+    response = await fetch(url, options);
+  } catch (error) {
+    throw new Error('Нет связи с сервером');
+  }
+  if (response.status === 401) throw new UnauthorizedError();
+  if (!response.ok) throw new Error(`Сервер ответил ${response.status}`);
+  return response;
+}
+
+export async function listOrders(key) {
+  const response = await request(key, 'orders');
+  let data;
+  try {
+    data = await response.json();
+  } catch (error) {
+    throw new Error('Сервер вернул неожиданный ответ');
+  }
+  return Array.isArray(data) ? data : [];
+}
+
+export async function setOrderStatus(key, id, statusId) {
+  await request(key, `orders/${id}`, { method: 'PATCH', body: { status: statusId } });
+}
+
+export async function deleteOrder(key, id) {
+  await request(key, `orders/${id}`, { method: 'DELETE' });
+}

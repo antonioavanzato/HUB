@@ -1,0 +1,73 @@
+/* Монохромное оформление: акценты белые, цветных градиентов нет. */
+:root {
+  --bg: #000000;
+  --surface: #111111;
+  --border: rgba(255, 255, 255, 0.14);
+  --text: #ffffff;
+  --muted: rgba(255, 255, 255, 0.55);
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: env(safe-area-inset-top) 16px calc(env(safe-area-inset-bottom) + 24px);
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.screen[hidden] { display: none; }
+
+/* Вход */
+.auth-title { margin: 22vh 0 24px; font-size: 30px; font-weight: 700; letter-spacing: -0.02em; }
+.auth-form { display: flex; flex-direction: column; gap: 12px; max-width: 420px; }
+.auth-label { color: var(--muted); font-size: 13px; }
+.auth-input {
+  padding: 14px; border-radius: var(--radius); border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); font-size: 16px;
+}
+.auth-input:focus { outline: none; border-color: var(--text); }
+.auth-error { color: var(--text); opacity: 0.8; font-size: 14px; }
+.auth-error[hidden] { display: none; }
+
+/* Кнопки */
+.button {
+  border-radius: 999px; border: 1px solid var(--border); cursor: pointer;
+  font-size: 14px; padding: 10px 16px; background: transparent; color: var(--text);
+  text-decoration: none; /* ссылки-действия выглядят как кнопки рядом с ними */
+}
+.button--primary { background: var(--text); color: var(--bg); border-color: var(--text); font-weight: 600; }
+.button:disabled { opacity: 0.45; cursor: default; }
+
+/* Заголовок списка */
+.header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 20px 0 12px; }
+.header-title { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+.header-subtitle { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+.header-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+.banner { margin: 0 0 12px; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius); color: var(--muted); font-size: 13px; }
+.banner[hidden] { display: none; }
+
+/* Фильтры */
+.filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none; }
+.filters::-webkit-scrollbar { display: none; }
+.filter { white-space: nowrap; }
+.filter[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+/* Список */
+.group-title { margin: 18px 0 8px; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+.card { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 14px; margin-bottom: 10px; }
+.card-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.card-name { margin: 0; font-size: 17px; font-weight: 600; }
+.card-status { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.card-meta { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+.card-msg { margin: 10px 0 0; font-size: 14px; white-space: pre-wrap; }
+.card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.card-actions select {
+  border-radius: 999px; border: 1px solid var(--border); background: transparent;
+  color: var(--text); font-size: 14px; padding: 9px 12px;
+}
+.empty { color: var(--muted); padding: 40px 0; text-align: center; }
