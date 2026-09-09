@@ -1,6 +1,13 @@
 // Рендер из состояния в DOM. Сети здесь нет: действия уходят в обработчики.
 import { STATUSES, labelForStatus } from './status.js';
-import { filterOrders, groupByDate, countsByStatus, subtitleText } from './store.js';
+import {
+  filterOrders,
+  groupByDate,
+  countsByStatus,
+  subtitleText,
+  activeOrders,
+  archivedOrders,
+} from './store.js';
 
 const el = (id) => document.getElementById(id);
 
@@ -26,15 +33,69 @@ export function setBanner(text) {
   node.hidden = !text;
 }
 
-function filterButton(label, isActive, onClick) {
+// Иконки фильтров — статические SVG, соответствуют SF Symbols из приложения.
+const ICONS = {
+  all: '<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
+  new: '<path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>',
+  contacted: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/>',
+  booked: '<circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/>',
+  archive: '<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8"/><path d="M10 12h4"/>',
+};
+
+function iconNode(name) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '2');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+  svg.setAttribute('aria-hidden', 'true');
+  // Разметка здесь постоянная, пользовательских данных в ней нет.
+  svg.innerHTML = ICONS[name] || '';
+  return svg;
+}
+
+// Кнопка фильтра. Как в приложении: у невыбранной видны иконка и счётчик,
+// подпись раскрывается только у активной — поэтому все пять умещаются в строку.
+function filterButton({ label, icon, count, isSelected, onClick }) {
   const button = document.createElement('button');
   button.type = 'button';
-  button.className = 'button filter';
-  button.textContent = label;
-  button.setAttribute('aria-pressed', String(isActive));
+  button.className = 'filter';
+  button.setAttribute('aria-pressed', String(isSelected));
+  button.setAttribute('aria-label', label);
+  button.append(iconNode(icon));
+
+  if (isSelected) {
+    const text = document.createElement('span');
+    text.className = 'filter-label';
+    text.textContent = label;
+    button.append(text);
+  }
+
+  if (count > 0) {
+    const badge = document.createElement('span');
+    badge.className = 'filter-count';
+    badge.textContent = String(count);
+    button.append(badge);
+  }
+
   button.addEventListener('click', onClick);
   return button;
 }
+
+// Подпись активного фильтра ужимается по размеру, а не обрезается многоточием.
+// Повторяет minimumScaleFactor(0.75) из BookingRequestsScreen.swift.
+function fitFilterLabel(label) {
+  const BASE = 13;
+  const MIN = Math.round(BASE * 0.75); // 10 px
+  label.style.fontSize = `${BASE}px`;
+  for (let size = BASE; size > MIN && label.scrollWidth > label.clientWidth; size -= 1) {
+    label.style.fontSize = `${size - 1}px`;
+  }
+}
+
+const FILTER_ICONS = { new: 'new', contacted: 'contacted', booked: 'booked' };
 
 export function renderFilters(all, state, onSelect) {
   const container = el('filters');
@@ -42,26 +103,45 @@ export function renderFilters(all, state, onSelect) {
   const counts = countsByStatus(all);
 
   container.append(
-    filterButton('Все', !state.archive && state.statusId === null, () =>
-      onSelect({ archive: false, statusId: null })
-    )
+    filterButton({
+      label: 'Все',
+      icon: 'all',
+      count: activeOrders(all).length,
+      isSelected: !state.archive && state.statusId === null,
+      onClick: () => onSelect({ archive: false, statusId: null }),
+    })
   );
 
   // В фильтрах только рабочие статусы: завершённые и отказы живут в архиве.
   for (const status of STATUSES) {
     if (status.id === 'completed' || status.id === 'cancelled') continue;
-    const count = counts[status.id] || 0;
-    const label = count > 0 ? `${status.label} · ${count}` : status.label;
+    const isSelected = !state.archive && state.statusId === status.id;
     container.append(
-      filterButton(label, !state.archive && state.statusId === status.id, () =>
-        onSelect({ archive: false, statusId: status.id })
-      )
+      filterButton({
+        label: status.label,
+        icon: FILTER_ICONS[status.id],
+        count: counts[status.id] || 0,
+        isSelected,
+        // Повторное нажатие снимает фильтр — как в приложении.
+        onClick: () =>
+          onSelect({ archive: false, statusId: isSelected ? null : status.id }),
+      })
     );
   }
 
   container.append(
-    filterButton('Архив', state.archive, () => onSelect({ archive: true, statusId: null }))
+    filterButton({
+      label: 'Архив',
+      icon: 'archive',
+      count: archivedOrders(all).length,
+      isSelected: state.archive,
+      onClick: () => onSelect({ archive: !state.archive, statusId: null }),
+    })
   );
+
+  // Размеры доступны только после вставки в документ.
+  const activeLabel = container.querySelector('.filter[aria-pressed="true"] .filter-label');
+  if (activeLabel) fitFilterLabel(activeLabel);
 }
 
 function metaLine(order) {

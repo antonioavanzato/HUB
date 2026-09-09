@@ -52,11 +52,32 @@ body {
 .banner { margin: 0 0 12px; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius); color: var(--muted); font-size: 13px; }
 .banner[hidden] { display: none; }
 
-/* Фильтры */
-.filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none; }
-.filters::-webkit-scrollbar { display: none; }
-.filter { white-space: nowrap; }
-.filter[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+/* Фильтры. Все пять умещаются в строку: подпись видна только у активного. */
+.filters { display: flex; align-items: stretch; gap: 4px; padding: 0 0 12px; }
+.filter {
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  padding: 9px 8px; border-radius: 999px; cursor: pointer; white-space: nowrap;
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: color .2s, background .2s, border-color .2s, flex-grow .2s;
+}
+.filter[aria-pressed="true"] {
+  /* min-width: 0 позволяет активной кнопке ужиматься, а подписи — обрезаться,
+     чтобы все пять всегда помещались в строку, как в приложении. */
+  flex: 1 1 auto; min-width: 0; padding: 9px 10px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.filter svg { width: 14px; height: 14px; flex-shrink: 0; }
+.filter-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.filter-count {
+  font-size: 11px; font-weight: 700; padding: 2px 4px; border-radius: 999px; flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.1);
+}
+.filter[aria-pressed="true"] .filter-count { background: rgba(255, 255, 255, 0.22); }
 
 /* Список */
 .group-title { margin: 18px 0 8px; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
