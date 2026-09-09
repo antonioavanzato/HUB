@@ -1,6 +1,10 @@
 // Кэшируем ТОЛЬКО оболочку. Заявки — персональные данные,
 // на диск устройства они не попадают (152-ФЗ).
-const CACHE = 'bookings-shell-v6';
+//
+// Стратегия — «сначала сеть». Кэш нужен лишь для работы без связи.
+// Обратный порядок (сначала кэш) приводил к тому, что на устройстве
+// неделями жила старая версия страницы.
+const CACHE = 'bookings-shell-v7';
 const SHELL = [
   './',
   'index.html',
@@ -34,7 +38,16 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   // Запросы к API мимо кэша всегда: ответы содержат персональные данные.
   if (url.origin !== self.location.origin) return;
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+    fetch(event.request)
+      .then((response) => {
+        // Свежий файл кладём в кэш — пригодится, когда связи не будет.
+        const copy = response.clone();
+        caches.open(CACHE).then((cache) => cache.put(event.request, copy)).catch(() => {});
+        return response;
+      })
+      .catch(() => caches.match(event.request).then((cached) => cached || Response.error()))
   );
 });

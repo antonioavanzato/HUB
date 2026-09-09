@@ -161,5 +161,16 @@ if (loadKey()) {
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  // updateViaCache: 'none' — сам файл sw.js никогда не берётся из кэша браузера,
+  // иначе обновление обработчика может не доехать до устройства неделями.
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {});
+
+  // Когда новый обработчик перехватывает управление, перезагружаем страницу
+  // один раз, чтобы показать свежую версию без ручного закрытия.
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloading) return;
+    reloading = true;
+    location.reload();
+  });
 }
