@@ -99,8 +99,8 @@ function filterButton({ label, icon, count, isSelected, onClick }) {
 // Подпись активного фильтра ужимается по размеру, а не обрезается многоточием.
 // Повторяет minimumScaleFactor(0.75) из BookingRequestsScreen.swift.
 function fitFilterLabel(label) {
-  const BASE = 13;
-  const MIN = Math.round(BASE * 0.75); // 10 px
+  const BASE = 12;
+  const MIN = Math.round(BASE * 0.75); // 9 px
   label.style.fontSize = `${BASE}px`;
   for (let size = BASE; size > MIN && label.scrollWidth > label.clientWidth; size -= 1) {
     label.style.fontSize = `${size - 1}px`;
