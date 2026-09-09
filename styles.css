@@ -212,9 +212,3 @@ body {
     transition-duration: .01ms !important;
   }
 }
-
-/* Номер версии: чтобы было видно, доехало ли обновление до устройства */
-.version {
-  margin: 28px 0 0; text-align: center;
-  font-size: 11px; color: rgba(255, 255, 255, 0.22);
-}
