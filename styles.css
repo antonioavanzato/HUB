@@ -135,3 +135,80 @@ body {
   color: var(--muted); font-size: 13px; overflow: hidden;
 }
 .pull[hidden] { display: none; }
+
+/* ============================================================
+   Движение. Сдержанное: короткие длительности, мягкие кривые.
+   ============================================================ */
+
+:root {
+  --ease: cubic-bezier(.22, .61, .36, 1);
+}
+
+@keyframes screen-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(10px) scale(.99); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes drop-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes dot-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(48, 209, 88, 0.18); }
+  50%      { box-shadow: 0 0 0 6px rgba(48, 209, 88, 0.06); }
+}
+
+/* Появление экрана */
+.screen { animation: screen-in .3s ease both; }
+
+/* Экран входа */
+.auth-title { animation: drop-in .45s var(--ease) both; }
+.auth-form  { animation: drop-in .45s var(--ease) .06s both; }
+.auth-input { transition: border-color .2s, background .2s; }
+.auth-error { animation: drop-in .25s var(--ease) both; }
+
+/* Заголовок и фильтры */
+.header      { animation: drop-in .35s var(--ease) both; }
+.filters     { animation: drop-in .35s var(--ease) .04s both; }
+.group-title { animation: drop-in .3s var(--ease) both; }
+.banner      { animation: drop-in .3s var(--ease) both; }
+
+/* Карточки: въезжают только новые (класс вешает ui.js) */
+.card {
+  transition: border-color .25s, background .25s, transform .18s var(--ease);
+}
+.card--enter { animation: card-in .38s var(--ease) both; }
+
+/* Отклик на нажатие */
+.button, .icon-button, .filter, .card-actions select {
+  transition: color .2s, background .2s, border-color .2s,
+              transform .14s var(--ease), flex-grow .2s;
+}
+.button:active,
+.icon-button:active,
+.filter:active,
+.card-actions select:active { transform: scale(.96); }
+
+.button:hover { border-color: rgba(255, 255, 255, 0.28); }
+.button--primary:hover { opacity: .9; }
+
+/* Живая точка связи */
+.conn[data-online="true"] .conn-dot { animation: dot-pulse 2.6s ease-in-out infinite; }
+
+/* Индикатор потягивания */
+.pull { transition: height .18s var(--ease); }
+
+/* Кому анимация мешает — её нет */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

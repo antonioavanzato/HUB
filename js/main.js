@@ -8,6 +8,7 @@ import {
   setConnection,
   renderFilters,
   renderList,
+  resetShownOrders,
   enablePullToRefresh,
 } from './ui.js';
 
@@ -34,6 +35,7 @@ function logout() {
   filterState = { archive: false, statusId: null };
   setBanner(null);
   setConnection(false);
+  resetShownOrders();
   showAuthScreen();
 }
 
@@ -50,10 +52,14 @@ async function poll() {
   const key = loadKey();
   if (!key) return;
   try {
-    orders = await listOrders(key);
+    const fresh = await listOrders(key);
     setConnection(true);
     setBanner(null);
-    render();
+    // Перерисовываем только при реальных изменениях: иначе список моргал бы
+    // анимацией каждые 20 секунд на каждом опросе.
+    const changed = JSON.stringify(fresh) !== JSON.stringify(orders);
+    orders = fresh;
+    if (changed) render();
   } catch (error) {
     setConnection(false);
     if (handleError(error)) return;

@@ -238,6 +238,14 @@ function card(order, handlers) {
   return node;
 }
 
+// Какие заявки уже показывались. Анимация въезда — только у новых,
+// чтобы список не дёргался при обычной перерисовке.
+let shownIds = new Set();
+
+export function resetShownOrders() {
+  shownIds = new Set();
+}
+
 export function renderList(all, state, handlers) {
   el('subtitle').textContent = subtitleText(all);
 
@@ -259,9 +267,13 @@ export function renderList(all, state, handlers) {
     title.textContent = group.title;
     container.append(title);
     for (const order of group.items) {
-      container.append(card(order, handlers));
+      const node = card(order, handlers);
+      if (!shownIds.has(order.id)) node.classList.add('card--enter');
+      container.append(node);
     }
   }
+
+  shownIds = new Set(visible.map((order) => order.id));
 }
 
 // Обновление потягиванием вниз. Кнопки «Обновить» нет: жест заменил её.
