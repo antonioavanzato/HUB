@@ -116,18 +116,191 @@ body {
 
 /* Список */
 .group-title { margin: 18px 0 8px; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
-.card { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 14px; margin-bottom: 10px; }
-.card-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
-.card-name { margin: 0; font-size: 17px; font-weight: 600; }
-.card-status { color: var(--muted); font-size: 12px; white-space: nowrap; }
-.card-meta { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
-.card-msg { margin: 10px 0 0; font-size: 14px; white-space: pre-wrap; }
-.card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.card-actions select {
-  border-radius: 999px; border: 1px solid var(--border); background: transparent;
-  color: var(--text); font-size: 14px; padding: 9px 12px;
-}
 .empty { color: var(--muted); padding: 40px 0; text-align: center; }
+
+/* ============================================================
+   Карточка заявки. Повторяет RequestCard из приложения.
+   Цвет статуса — только как смысл: красный требует внимания,
+   зелёный означает выполнено, серый — неактивно.
+   ============================================================ */
+
+.card {
+  --status: #ffffff;
+  position: relative;
+  margin-bottom: 10px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.card[data-status="new"] {
+  --status: rgb(217, 89, 89);
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(217, 89, 89, 0.35);
+}
+.card[data-status="completed"] { --status: rgb(115, 184, 140); }
+.card[data-status="cancelled"] { --status: rgba(255, 255, 255, 0.4); }
+.card[data-archived="true"] { opacity: .75; }
+.card[data-archived="true"][data-expanded="true"] { opacity: 1; }
+
+/* Полоска статуса слева */
+.card-accent {
+  position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
+  border-radius: 16px; background: var(--status);
+}
+
+.card-body { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+
+/* Верхняя строка */
+.card-top { display: flex; align-items: center; gap: 8px; }
+.chip-type {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 8px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12); color: var(--text);
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+}
+.chip-type svg { width: 11px; height: 11px; }
+
+.status-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 10px; border-radius: 999px;
+  color: var(--status);
+  background: color-mix(in srgb, var(--status) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--status) 30%, transparent);
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+}
+.status-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+.card-created {
+  margin-left: auto; flex-shrink: 0;
+  font-size: 11px; color: rgba(255, 255, 255, 0.4);
+}
+
+/* Имя и краткие данные */
+.card-main { display: flex; align-items: center; gap: 12px; }
+.card-headline { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.card-name { margin: 0; font-size: 16px; font-weight: 600; color: var(--text); }
+.card-meta {
+  margin: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  font-size: 12px; font-weight: 500; color: rgba(255, 255, 255, 0.6);
+}
+.meta-part { display: inline-flex; align-items: center; gap: 4px; }
+.meta-part svg { width: 11px; height: 11px; flex-shrink: 0; }
+.meta-dot { font-size: 10px; opacity: .6; }
+
+.chevron {
+  width: 28px; height: 28px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: none; border-radius: 50%; cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.5);
+}
+.chevron svg { width: 13px; height: 13px; transition: transform .3s var(--ease); }
+.chevron[aria-expanded="true"] svg { transform: rotate(180deg); }
+
+/* Подробности */
+.card-details {
+  display: flex; flex-direction: column; gap: 14px;
+  padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.08);
+  animation: card-in .28s var(--ease) both;
+}
+.card-details[hidden] { display: none; }
+
+.contacts { display: flex; flex-direction: column; gap: 8px; }
+.contact-row { display: flex; align-items: center; gap: 8px; }
+.contact-row svg { width: 13px; height: 13px; color: rgba(255, 255, 255, 0.4); flex-shrink: 0; }
+.contact-row span { font-size: 14px; font-weight: 500; color: rgba(255, 255, 255, 0.85); }
+
+.card-section { display: flex; flex-direction: column; gap: 8px; }
+.section-label {
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+  color: rgba(255, 255, 255, 0.4);
+}
+.card-message {
+  margin: 0; padding: 12px; border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 13px; color: rgba(255, 255, 255, 0.7); white-space: pre-wrap;
+}
+
+/* Путь заявки */
+.flow { display: flex; flex-direction: column; gap: 10px; }
+.flow-track { display: flex; align-items: flex-start; }
+.flow-track[data-cancelled="true"] { opacity: .4; }
+.flow-step {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  background: none; border: none; padding: 0; cursor: pointer; flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.4);
+}
+.flow-mark {
+  width: 22px; height: 22px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  transition: background .2s, border-color .2s, color .2s;
+}
+.flow-mark svg { width: 12px; height: 12px; }
+.flow-step[data-reached="true"] { color: var(--text); }
+.flow-step[data-reached="true"] .flow-mark {
+  background: rgba(255, 255, 255, 0.16); border-color: rgba(255, 255, 255, 0.3);
+}
+.flow-step[data-current="true"] .flow-mark {
+  background: var(--text); border-color: var(--text); color: #000;
+}
+.flow-caption { font-size: 10px; font-weight: 600; white-space: nowrap; }
+.flow-line {
+  flex: 1; height: 1px; margin: 11px 4px 0;
+  background: rgba(255, 255, 255, 0.14);
+}
+.flow-line[data-reached="true"] { background: rgba(255, 255, 255, 0.35); }
+
+.flow-cancel {
+  align-self: flex-start; padding: 7px 12px; border-radius: 999px; cursor: pointer;
+  font-size: 12px; font-weight: 600; font-family: inherit;
+  color: rgba(255, 255, 255, 0.55);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.flow-cancel[data-active="true"] {
+  color: rgb(217, 89, 89);
+  background: rgba(217, 89, 89, 0.14);
+  border-color: rgba(217, 89, 89, 0.3);
+}
+
+/* Действия */
+.card-actions {
+  display: flex; align-items: center; gap: 8px;
+  padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+.actions-spacer { flex: 1; }
+
+.pill-button {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 34px; padding: 0 14px; border-radius: 999px;
+  font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+.pill-button--prominent {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+.pill-button svg { width: 13px; height: 13px; }
+
+.round-button {
+  width: 34px; height: 34px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%; cursor: pointer; text-decoration: none;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+.round-button svg { width: 13px; height: 13px; }
+.round-button--danger {
+  color: rgb(217, 89, 89);
+  background: rgba(217, 89, 89, 0.14);
+  border-color: transparent;
+}
 
 /* Индикатор обновления потягиванием */
 .pull {
@@ -186,14 +359,14 @@ body {
 .card--enter { animation: card-in .38s var(--ease) both; }
 
 /* Отклик на нажатие */
-.button, .icon-button, .filter, .card-actions select {
+.button, .icon-button, .filter,
+.pill-button, .round-button, .chevron, .flow-step, .flow-cancel {
   transition: color .2s, background .2s, border-color .2s,
               transform .14s var(--ease), flex-grow .2s;
 }
-.button:active,
-.icon-button:active,
-.filter:active,
-.card-actions select:active { transform: scale(.96); }
+.button:active, .icon-button:active, .filter:active,
+.pill-button:active, .round-button:active, .chevron:active,
+.flow-step:active, .flow-cancel:active { transform: scale(.96); }
 
 .button:hover { border-color: rgba(255, 255, 255, 0.28); }
 .button--primary:hover { opacity: .9; }
