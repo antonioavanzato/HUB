@@ -1,6 +1,6 @@
 // Кэшируем ТОЛЬКО оболочку. Заявки — персональные данные,
 // на диск устройства они не попадают (152-ФЗ).
-const CACHE = 'bookings-shell-v1';
+const CACHE = 'bookings-shell-v2';
 const SHELL = [
   './',
   'index.html',

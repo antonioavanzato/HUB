@@ -7,6 +7,7 @@ import {
   setBanner,
   renderFilters,
   renderList,
+  enablePullToRefresh,
 } from './ui.js';
 
 // Тот же интервал, что у приложения: BookingRequestsSyncService.pollInterval.
@@ -133,7 +134,7 @@ async function onAuthSubmit(event) {
 
 document.getElementById('auth-form').addEventListener('submit', onAuthSubmit);
 document.getElementById('logout').addEventListener('click', logout);
-document.getElementById('refresh').addEventListener('click', poll);
+enablePullToRefresh(poll);
 
 // В фоне не опрашиваем: бережём бесплатный лимит Cloud Function.
 document.addEventListener('visibilitychange', () => {

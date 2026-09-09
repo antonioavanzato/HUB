@@ -173,3 +173,65 @@ export function renderList(all, state, handlers) {
     }
   }
 }
+
+// Обновление потягиванием вниз. Кнопки «Обновить» нет: жест заменил её.
+export function enablePullToRefresh(onRefresh) {
+  const indicator = el('pull');
+  const THRESHOLD = 70;      // сколько нужно протянуть, чтобы обновить
+  const MAX_PULL = 110;      // дальше индикатор не растёт
+
+  let startY = null;
+  let distance = 0;
+  let refreshing = false;
+
+  const atTop = () => (window.scrollY || document.documentElement.scrollTop) === 0;
+
+  function reset() {
+    startY = null;
+    distance = 0;
+    indicator.hidden = true;
+    indicator.style.height = '';
+  }
+
+  document.addEventListener('touchstart', (event) => {
+    if (refreshing || event.touches.length !== 1 || !atTop()) {
+      startY = null;
+      return;
+    }
+    startY = event.touches[0].clientY;
+    distance = 0;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', (event) => {
+    if (startY === null) return;
+    distance = event.touches[0].clientY - startY;
+    if (distance <= 0) {
+      indicator.hidden = true;
+      return;
+    }
+    // Гасим родной отскок страницы, иначе жест конфликтует с прокруткой.
+    event.preventDefault();
+    indicator.hidden = false;
+    indicator.textContent =
+      distance >= THRESHOLD ? 'Отпустите для обновления' : 'Потяните вниз';
+    indicator.style.height = `${Math.min(distance, MAX_PULL)}px`;
+  }, { passive: false });
+
+  document.addEventListener('touchend', async () => {
+    if (startY === null) return;
+    if (distance < THRESHOLD) {
+      reset();
+      return;
+    }
+    refreshing = true;
+    startY = null;
+    indicator.textContent = 'Обновление…';
+    indicator.style.height = `${THRESHOLD}px`;
+    try {
+      await onRefresh();
+    } finally {
+      refreshing = false;
+      reset();
+    }
+  });
+}

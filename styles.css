@@ -17,6 +17,7 @@ body {
   color: var(--text);
   font: 15px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: contain;
 }
 
 .screen[hidden] { display: none; }
@@ -71,3 +72,10 @@ body {
   color: var(--text); font-size: 14px; padding: 9px 12px;
 }
 .empty { color: var(--muted); padding: 40px 0; text-align: center; }
+
+/* Индикатор обновления потягиванием */
+.pull {
+  margin: 0; display: flex; align-items: center; justify-content: center;
+  color: var(--muted); font-size: 13px; overflow: hidden;
+}
+.pull[hidden] { display: none; }
