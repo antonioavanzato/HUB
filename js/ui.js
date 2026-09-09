@@ -27,6 +27,16 @@ export function setAuthError(text) {
   node.hidden = !text;
 }
 
+// Индикатор связи с Yandex Cloud: зелёная точка — ответ получен,
+// серая — облако недоступно.
+export function setConnection(online) {
+  const node = el('conn');
+  const text = online ? 'Есть связь с облаком' : 'Нет связи с облаком';
+  node.dataset.online = String(online);
+  node.title = text;
+  node.querySelector('.visually-hidden').textContent = text;
+}
+
 export function setBanner(text) {
   const node = el('banner');
   node.textContent = text || '';

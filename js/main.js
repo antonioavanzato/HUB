@@ -5,6 +5,7 @@ import {
   showListScreen,
   setAuthError,
   setBanner,
+  setConnection,
   renderFilters,
   renderList,
   enablePullToRefresh,
@@ -32,6 +33,7 @@ function logout() {
   orders = [];
   filterState = { archive: false, statusId: null };
   setBanner(null);
+  setConnection(false);
   showAuthScreen();
 }
 
@@ -49,9 +51,11 @@ async function poll() {
   if (!key) return;
   try {
     orders = await listOrders(key);
+    setConnection(true);
     setBanner(null);
     render();
   } catch (error) {
+    setConnection(false);
     if (handleError(error)) return;
     setBanner('Нет связи. Показаны последние загруженные заявки.');
   }

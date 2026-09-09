@@ -47,7 +47,42 @@ body {
 .header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 20px 0 12px; }
 .header-title { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
 .header-subtitle { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
-.header-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.header-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+/* Индикатор связи с облаком. Единственное цветное пятно на странице:
+   зелёный здесь несёт смысл, а не оформление. */
+.conn { display: inline-flex; align-items: center; }
+.conn-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.28);
+  transition: background .3s, box-shadow .3s;
+}
+.conn[data-online="true"] .conn-dot {
+  background: #30d158;
+  box-shadow: 0 0 0 3px rgba(48, 209, 88, 0.18);
+}
+
+/* Круглая кнопка-иконка */
+.icon-button {
+  width: 34px; height: 34px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%; cursor: pointer;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  transition: color .2s, background .2s, border-color .2s;
+}
+.icon-button:hover, .icon-button:active {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.icon-button svg { width: 15px; height: 15px; }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; margin: -1px;
+  padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
 
 .banner { margin: 0 0 12px; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius); color: var(--muted); font-size: 13px; }
 .banner[hidden] { display: none; }
