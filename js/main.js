@@ -52,7 +52,11 @@ async function poll() {
   const key = loadKey();
   if (!key) return;
   try {
-    const fresh = await listOrders(key);
+    // Статуса «Забронировано» больше нет: старые такие заявки
+    // показываем как «Связались», чтобы они остались в работе.
+    const fresh = (await listOrders(key)).map((o) =>
+      o.status === 'booked' ? { ...o, status: 'contacted' } : o
+    );
     setConnection(true);
     setBanner(null);
     // Перерисовываем только при реальных изменениях: иначе список моргал бы
