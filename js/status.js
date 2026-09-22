@@ -3,7 +3,6 @@
 export const STATUSES = [
   { id: 'new', label: 'Новая' },
   { id: 'contacted', label: 'Связались' },
-  { id: 'booked', label: 'Забронировано' },
   { id: 'cancelled', label: 'Отказ' },
   { id: 'completed', label: 'Завершена' },
 ];
